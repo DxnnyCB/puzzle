@@ -1,0 +1,187 @@
+<style>
+    h1 {
+        text-align: center;
+        text-transform: uppercase;
+        margin-bottom: 60px;
+    }
+
+    #root {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        cursor: pointer;
+        margin: 0 auto;
+        width: 500px;
+    }
+
+    .card {
+        height: 200px;
+        border-radius: 20px;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: all .3s ease-in-out;
+    }
+
+    .back,
+    .front {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        color: #333;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 50px;
+        border-radius: 20px;
+
+    }
+
+    .back {
+        transform: rotateY(180deg);
+        background: whitesmoke;
+    }
+
+    .front {
+        background: #C783E0;
+    }
+
+    .card.flip {
+        transform: rotateY(180deg);
+    }
+
+    .card.win .back {
+        background: #0587417a;
+    }
+
+    .card.lost .back {
+        background: #ff00003d;
+    }
+</style>
+<h1>Busca tu regalo, si no te gusta, inténtalo con otro</h1>
+<div id="root"></div>
+
+<script>
+    let game;
+
+
+    function Card(num) {
+        this.num = num;
+        this.htmlElement = null;
+    }
+
+    Card.prototype.handleClick = function (e) {
+        this.htmlElement.classList.toggle('flip');
+        if (!game.firstCard) {
+            game.firstCard = this.num;
+            this.htmlElement.style.pointerEvents = 'none';
+            return;
+        }
+
+        if (game.firstCard !== this.num) {
+            this.lostCard();
+            setTimeout(() => {
+                game.loose();
+            }, 0)
+            return;
+        }
+
+        this.winnerCard();
+        setTimeout(() => {
+            game.win();
+        }, 0)
+    }
+
+    Card.prototype.create = function () {
+        // root 
+        const root = document.querySelector('#root');
+
+        // card
+        const card = document.createElement('div');
+        card.classList.add('card');
+
+        // front 
+        const cardFront = document.createElement('div');
+        cardFront.classList.add('front');
+
+        // back 
+        const cardBack = document.createElement('div');
+        cardBack.classList.add('back');
+        cardBack.innerHTML = this.num;
+
+        card.appendChild(cardFront);
+        card.appendChild(cardBack);
+
+
+        card.addEventListener('click', this.handleClick.bind(this));
+        this.htmlElement = card;
+        return card;
+    }
+
+    Card.prototype.lostCard = function () {
+        this.htmlElement.classList.add('lost');
+    }
+
+    Card.prototype.winnerCard = function () {
+        this.htmlElement.classList.add('win');
+    }
+
+
+    function renderCard(card) {
+        const cardElem = card.create();
+        const root = document.querySelector('#root');
+        root.appendChild(card.create());
+    }
+
+
+    function getRandomNumbers(qty, max) {
+        const numSet = new Set();
+        while (numSet.size < qty) {
+            numSet.add(Math.floor(Math.random() * max) + 1)
+        }
+        return [...numSet];
+    }
+
+
+
+    function Game() {
+        this.firstCard = null;
+
+    }
+
+    Game.prototype.restart = function () {
+        const root = document.querySelector('#root');
+        root.innerHTML = '';
+        this.firstCard = null;
+        this.start();
+    }
+
+    function getRandomWords(numWords, wordSet) {
+        const uniqueWords = new Set();
+        while (uniqueWords.size < numWords) {
+            const randomIndex = Math.floor(Math.random() * wordSet.length);
+            uniqueWords.add(wordSet[randomIndex]);
+        }
+        return [...uniqueWords];
+    }
+
+    Game.prototype.start = function () {
+        // Conjunto de palabras
+        const words = ["Phantom", "Makis", "Pollito", "Nada", "Besito", "Abrazo"];
+
+        // Obtener 3 palabras únicas
+        let selectedWords = getRandomWords(3, words);
+
+        // Duplicar y ordenar aleatoriamente las palabras
+        selectedWords = [...selectedWords, ...selectedWords].sort(() => Math.random() - 0.5);
+
+        // Renderizar las cartas
+        selectedWords.forEach(word => {
+            renderCard(new Card(word));
+        });
+    }
+
+    game = new Game();
+    game.start()
+
+</script>
