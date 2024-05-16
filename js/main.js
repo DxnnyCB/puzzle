@@ -1,6 +1,6 @@
 const puzzleConfig = {
     size: { width: 1140, height: 880 },
-    pieceCount: { x: 12, y: 11 }
+    pieceCount: { x: 8, y: 7 }
 }
 const state = {
     pieces: [],
